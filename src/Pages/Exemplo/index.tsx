@@ -42,6 +42,7 @@ import {
     FormatQuote,
     Visibility,
     VisibilityOff,
+    CloudUpload,
 } from '@mui/icons-material';
 import { useConfirm } from '../../Contexts/ConfirmDialogContext';
 import { toastManager } from '../../Services/ToastUtils';
@@ -50,6 +51,8 @@ import { PersonalizedDataGrid } from '../../Components/PersonalizedDataGrid';
 import { withDefaultColumns } from '../../Services/PersonalizedDataGrid';
 import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { ActionButtons } from '../../Components/PersonalizedDataGrid/ActionButtons';
+import { FileUpload } from '../../Components/FileUpload';
+import { MoneyTextField } from '../../Components/MoneyTextField';
 import { useExemplo } from './useExemplo';
 
 const columns: GridColDef[] = withDefaultColumns([
@@ -112,6 +115,8 @@ export const Exemplo = () => {
     const confirm = useConfirm();
     const [gridRows, setGridRows] = useState(sampleRows);
     const [showPassword, setShowPassword] = useState(false);
+    const [file, setFile] = useState<File | null>(null);
+    const [loadingFile, setLoadingFile] = useState(false);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 3 }}>
@@ -221,13 +226,15 @@ export const Exemplo = () => {
                                             name="valor"
                                             control={control}
                                             render={({ field }) => (
-                                                <TextField
-                                                    {...field}
+                                                <MoneyTextField
                                                     label="Valor Monetário"
-                                                    type="number"
                                                     fullWidth
-                                                    slotProps={{ htmlInput: { step: 0.01 } }}
-                                                    value={field.value ?? ''}
+                                                    prefix="R$"
+                                                    minValue={0}
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                    onBlur={field.onBlur}
+                                                    inputRef={field.ref}
                                                     error={!!errors.valor}
                                                     helperText={errors.valor?.message}
                                                 />
@@ -614,6 +621,40 @@ export const Exemplo = () => {
                                         <Typography variant="body2" color="text.secondary">Data (null):</Typography>
                                         <Chip label={formatarDataTela(null)} color="default" variant="outlined" />
                                     </Box>
+                                </Stack>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader
+                                title="Upload de Arquivos"
+                                subheader="FileUpload component"
+                                avatar={<CloudUpload />}
+                            />
+                            <CardContent>
+                                <Stack spacing={2}>
+                                    <FileUpload
+                                        value={file}
+                                        onChange={setFile}
+                                        loading={loadingFile}
+                                        accept={['application/pdf', 'image/png', 'image/jpeg']}
+                                        helperText="Formatos aceitos: PDF, PNG, JPEG"
+                                    />
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={() => {
+                                            setLoadingFile(true);
+                                            setTimeout(() => {
+                                                setLoadingFile(false);
+                                                toastManager.success('Upload simulado com sucesso!');
+                                            }, 2000);
+                                        }}
+                                        disabled={!file || loadingFile}
+                                        startIcon={<CloudUpload />}
+                                    >
+                                        Simular Upload
+                                    </Button>
                                 </Stack>
                             </CardContent>
                         </Card>

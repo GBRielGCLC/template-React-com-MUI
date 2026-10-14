@@ -85,7 +85,9 @@ src/
 ├── Components/         # Componentes reutilizáveis
 │   ├── BarraColorida.tsx
 │   ├── ConfirmDialog/
+│   ├── FileUpload/
 │   ├── GenericLayout/
+│   ├── MoneyTextField/     # Campo monetário com máscara
 │   ├── PersonalizedDataGrid/
 │   ├── PersonalizedToast/
 │   └── ToggleThemeButton/
@@ -95,6 +97,7 @@ src/
 │   └── ThemeContext.tsx
 ├── Pages/              # Páginas da aplicação
 │   ├── AccessDenied/
+│   ├── Exemplo/            # Showcase dos componentes e do formulário
 │   ├── Home/
 │   ├── Login/
 │   └── NotFound/
@@ -120,11 +123,134 @@ src/
 - ✅ Autenticação básica com contexto
 - ✅ Formulários com validação (Yup + React Hook Form)
 - ✅ Componente de grade de dados personalizado
+- ✅ Upload de arquivos com drag-and-drop, preview e validação
+- ✅ Campo monetário com máscara, prefixo e validação de mínimo/máximo
 - ✅ Notificações toast
 - ✅ Roteamento com proteção de páginas
 - ✅ Configuração de API com interceptors
 - ✅ Diálogo de confirmação global
 - ✅ Layout genérico para páginas
+- ✅ Testes unitários com Jest + React Testing Library
+
+---
+
+## Componentes
+
+### MoneyTextField — campo monetário
+
+Componente de input de valores em dinheiro (`src/Components/MoneyTextField/index.tsx`).
+Ele mascara a digitação, mantém o valor "limpo" (`number`) para o formulário/back e
+aceita todas as props do `TextField` do MUI.
+
+**Comportamento:**
+
+- Digitação estilo calculadora: os dígitos sempre entram pelos menos significativos
+  (`1`, `2`, `3`, `4` → `12,34`), com reaproveitamento do agrupamento de milhar.
+- Colar texto é interpretado como número escrito (`"R$ 1.234,56"`, `"1234.56"`, `"1234"`).
+- No `blur` o valor é arredondado nas casas decimais configuradas e respeita
+  `minValue`/`maxValue` (mostrando um aviso no `helperText` por 3 segundos).
+- `inputMode="decimal"` (ou `"numeric"` sem decimais) para teclado numérico no celular.
+- Prefixo (`R$`) exibido apenas quando há valor, para não colidir com o `label` flutuante.
+
+**Props**
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `value` | `number \| string \| null` | — | Valor limpo, do jeito que vai para o back (ex.: `1234.56`). Sem a prop, o componente cuida do próprio estado (não controlado). |
+| `onChange` | `(value: number \| null) => void` | — | Devolve o valor limpo; `null` quando o campo está vazio. |
+| `decimals` | `number \| false` | `2` | Casas decimais exibidas. `0` ou `false` trabalha só com inteiros. |
+| `prefix` | `string \| false` | `"R$"` | Texto antes do valor (`"US$"` etc.). `""` ou `false` remove. |
+| `thousandSeparator` | `string \| false` | `"."` | Separador de milhar. `false` ou `""` desliga o agrupamento. |
+| `decimalSeparator` | `string` | `","` | Separador decimal. |
+| `minValue` | `number` | — | No blur, valores abaixo do mínimo são ajustados + aviso. |
+| `maxValue` | `number` | — | No blur, valores acima do máximo são ajustados + aviso. |
+
+Todas as demais props (`label`, `fullWidth`, `error`, `helperText`, `disabled`,
+`slotProps`, `inputRef`...) são repassadas ao `TextField`.
+
+**Uso básico**
+
+```tsx
+import { MoneyTextField } from '../../Components/MoneyTextField';
+
+<MoneyTextField
+    label="Valor"
+    value={valor}                 // number | null (ex.: 1234.56)
+    onChange={setValor}           // (value: number | null) => void
+    minValue={0}
+    fullWidth
+/>
+```
+
+**Com react-hook-form + Controller**
+
+```tsx
+import { Controller } from 'react-hook-form';
+import { MoneyTextField } from '../../Components/MoneyTextField';
+
+<Controller
+    name="valor"
+    control={control}
+    render={({ field, fieldState }) => (
+        <MoneyTextField
+            label="Valor Monetário"
+            fullWidth
+            prefix="R$"
+            minValue={0}
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+        />
+    )}
+/>
+```
+
+No esquema Yup, valide o valor limpo como número:
+
+```typescript
+valor: yup.number().required().nullable().min(0),
+```
+
+**Personalizando a máscara**
+
+```tsx
+// Só inteiros (sem centavos)
+<MoneyTextField label="Preço" decimals={0} />
+
+// Dólar: "US$ 1,234.56"
+<MoneyTextField
+    prefix="US$"
+    thousandSeparator=","
+    decimalSeparator="."
+/>
+
+// Sem agrupamento de milhar
+<MoneyTextField thousandSeparator={false} />
+```
+
+**Exibindo o valor formatado**
+
+Para renderizar o número na tela (tabelas, chips, cards), use o formatador
+`formatarMoeda` de `src/Services/Formatters`:
+
+```tsx
+import { formatarMoeda } from '../../Services/Formatters';
+
+formatarMoeda(1500.5); // "R$ 1.500,50"
+```
+
+Exemplo completo funcionando: `src/Pages/Exemplo/index.tsx` (campo "Valor Monetário").
+
+🧪 **Testes**: `src/Components/MoneyTextField/index.test.tsx` — 25 casos cobrindo máscara
+na digitação, colagem (formato do back, prefixo, negativos), não controlado, prefixo,
+separadores personalizados, `minValue`/`maxValue` no blur e o aviso expirando.
+
+```bash
+npm test -- --watchAll=false --testPathPattern=MoneyTextField
+```
 
 ---
 
