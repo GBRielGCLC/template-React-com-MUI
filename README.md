@@ -9,6 +9,7 @@ Template base para projetos React com Material UI (MUI), incluindo autenticaçã
 - **@mui/icons-material** (v7.3.9) - Ícones Material UI
 - **@mui/x-data-grid** (v8.28.1) - Componente de grade de dados
 - **@mui/x-date-pickers** (v8.27.2) - Seletores de data/hora
+- **@base-ui/react** (v1.9.0) - Primitivos sem estilo da Base UI (base do NumberSpinner)
 - **@emotion/react** (v11.14.0) - Motor de estilos CSS-in-JS
 - **@emotion/styled** (v11.14.1) - Estilização de componentes
 
@@ -16,6 +17,7 @@ Template base para projetos React com Material UI (MUI), incluindo autenticaçã
 - **react-hook-form** (v7.72.0) - Gerenciamento de formulários
 - **@hookform/resolvers** (v5.2.2) - Resolvers para validação de formulários
 - **yup** (v1.7.1) - Validação de esquemas
+- **react-imask** (v7.6.1) - Máscaras de input (telefone, CPF/CNPJ)
 
 ### Navegação e HTTP
 - **react-router-dom** (v7.14.2) - Roteamento de páginas
@@ -83,13 +85,15 @@ npm uninstall @testing-library/react @testing-library/jest-dom
 ```
 src/
 ├── Components/         # Componentes reutilizáveis
-│   ├── BarraColorida.tsx
 │   ├── ConfirmDialog/
+│   ├── CpfCnpjTextField/   # Campo CPF/CNPJ com máscara dinâmica
 │   ├── FileUpload/
 │   ├── GenericLayout/
 │   ├── MoneyTextField/     # Campo monetário com máscara
+│   ├── NumberSpinner/      # Campo numérico com botões +/-
 │   ├── PersonalizedDataGrid/
 │   ├── PersonalizedToast/
+│   ├── PhoneTextField/     # Campo de telefone com máscara
 │   └── ToggleThemeButton/
 ├── Contexts/           # Contextos React
 │   ├── AuthContext.tsx
@@ -125,6 +129,8 @@ src/
 - ✅ Componente de grade de dados personalizado
 - ✅ Upload de arquivos com drag-and-drop, preview e validação
 - ✅ Campo monetário com máscara, prefixo e validação de mínimo/máximo
+- ✅ Campos de telefone e CPF/CNPJ com máscara (react-imask)
+- ✅ Campo numérico com botões +/− (spinner)
 - ✅ Notificações toast
 - ✅ Roteamento com proteção de páginas
 - ✅ Configuração de API com interceptors
@@ -250,6 +256,216 @@ separadores personalizados, `minValue`/`maxValue` no blur e o aviso expirando.
 
 ```bash
 npm test -- --watchAll=false --testPathPattern=MoneyTextField
+```
+
+---
+
+### PhoneTextField — campo de telefone
+
+Componente de input com máscara de telefone celular (`src/Components/PhoneTextField/index.tsx`).
+Usa `react-imask` com a máscara `(00) 9 0000-0000` (DDD + número) e devolve o valor
+**mascarado** como string.
+
+**Comportamento:**
+
+- Máscara fixa de celular com DDD: `(11) 9 1234-5678`.
+- `onChange` devolve a string já mascarada — valide como `string` no Yup.
+- `value` aceita `string | null` (o `null` vira `""`), então funciona direto com `Controller`.
+- Sem valor, não exibe o placeholder (lazy mode).
+- Aceita todas as props do `TextField` do MUI.
+
+**Props**
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `value` | `string \| null` | — | Valor mascarado (ex.: `"(11) 9 1234-5678"`). |
+| `onChange` | `(value: string) => void` | — | Devolve o valor mascarado. |
+
+**Uso básico**
+
+```tsx
+import { PhoneTextField } from '../../Components/PhoneTextField';
+
+<PhoneTextField
+    label="Telefone"
+    value={telefone}       // string | null
+    onChange={setTelefone} // (value: string) => void
+    fullWidth
+/>
+```
+
+**Com react-hook-form + Controller**
+
+```tsx
+import { Controller } from 'react-hook-form';
+import { PhoneTextField } from '../../Components/PhoneTextField';
+
+<Controller
+    name="telefone"
+    control={control}
+    render={({ field, fieldState }) => (
+        <PhoneTextField
+            label="Telefone"
+            fullWidth
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+        />
+    )}
+/>
+```
+
+No esquema Yup:
+
+```typescript
+telefone: yup.string().required(),
+```
+
+---
+
+### CpfCnpjTextField — campo CPF/CNPJ
+
+Componente de input com máscara de CPF ou CNPJ (`src/Components/CpfCnpjTextField/index.tsx`).
+Também usa `react-imask` e devolve o valor **mascarado** como string.
+
+**Comportamento:**
+
+- Sem a prop `tipo`, a máscara é **dinâmica**: o campo alterna entre CPF
+  (`000.000.000-00`) e CNPJ (`00.000.000/0000-00`) conforme a quantidade de dígitos.
+- `tipo="cpf"` ou `tipo="cnpj"` trava a máscara no formato escolhido.
+- `value` aceita `string | null` e `onChange` devolve a string mascarada.
+- Sem valor, não exibe o placeholder (lazy mode).
+- Aceita todas as props do `TextField` do MUI.
+
+**Props**
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `value` | `string \| null` | — | Valor mascarado. |
+| `onChange` | `(value: string) => void` | — | Devolve o valor mascarado. |
+| `tipo` | `"cpf" \| "cnpj"` | — | Restringe a máscara. Sem a prop, aceita os dois (dinâmico). |
+
+**Uso básico**
+
+```tsx
+import { CpfCnpjTextField } from '../../Components/CpfCnpjTextField';
+
+// Dinâmico: aceita CPF e CNPJ
+<CpfCnpjTextField
+    label="CPF/CNPJ"
+    value={documento}
+    onChange={setDocumento}
+    fullWidth
+/>
+
+// Travado em CPF
+<CpfCnpjTextField label="CPF" tipo="cpf" value={cpf} onChange={setCpf} fullWidth />
+```
+
+**Com react-hook-form + Controller**
+
+```tsx
+import { Controller } from 'react-hook-form';
+import { CpfCnpjTextField } from '../../Components/CpfCnpjTextField';
+
+<Controller
+    name="documento"
+    control={control}
+    render={({ field, fieldState }) => (
+        <CpfCnpjTextField
+            label="CPF/CNPJ"
+            fullWidth
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+        />
+    )}
+/>
+```
+
+No esquema Yup:
+
+```typescript
+documento: yup.string().required(),
+```
+
+---
+
+### NumberSpinner — campo numérico com botões +/−
+
+Campo numérico com botões de incrementar/decrementar (`src/Components/NumberSpinner/index.tsx`).
+Montado sobre o `NumberField` da **Base UI** (`@base-ui/react`) com o visual do MUI
+(`FormControl`, `FormLabel`, `OutlinedInput` e `Button`).
+
+**Comportamento:**
+
+- Botão `−` (vermelho) à esquerda e `+` (verde) à direita, com o valor centralizado.
+- Aceita todas as props do `NumberField.Root` da Base UI: `value`, `onValueChange`,
+  `min`, `max`, `step`, `disabled`, `required` etc.
+- No `blur`/teclado a Base UI valida e normaliza o valor (respeitando `min`/`max`/`step`).
+- `label`, `error`, `size` e `fullWidth` são props próprias do componente.
+
+**Props**
+
+| Prop | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `value` | `number \| null` | — | Valor controlado. |
+| `onValueChange` | `(value: number \| null) => void` | — | Devolve o valor ao alterar. |
+| `min` / `max` | `number` | — | Limites do campo. |
+| `step` | `number` | — | Incremento dos botões +/−. |
+| `label` | `ReactNode` | — | Rótulo acima do campo. |
+| `error` | `boolean` | `false` | Exibe o campo em estado de erro. |
+| `size` | `"small" \| "medium"` | `"small"` | Tamanho do campo. |
+| `fullWidth` | `boolean` | `false` | Ocupa a largura toda. |
+
+**Uso básico**
+
+```tsx
+import NumberSpinner from '../../Components/NumberSpinner';
+
+<NumberSpinner
+    label="Quantidade"
+    value={quantidade}
+    onValueChange={setQuantidade}
+    min={0}
+    max={100}
+    fullWidth
+/>
+```
+
+**Com react-hook-form + Controller**
+
+```tsx
+import { Controller } from 'react-hook-form';
+import NumberSpinner from '../../Components/NumberSpinner';
+
+<Controller
+    name="quantidade"
+    control={control}
+    render={({ field, fieldState }) => (
+        <NumberSpinner
+            label="Quantidade"
+            fullWidth
+            min={0}
+            value={field.value}
+            onValueChange={field.onChange}
+            onBlur={field.onBlur}
+            error={!!fieldState.error}
+        />
+    )}
+/>
+```
+
+No esquema Yup:
+
+```typescript
+quantidade: yup.number().required().nullable().integer().min(0),
 ```
 
 ---

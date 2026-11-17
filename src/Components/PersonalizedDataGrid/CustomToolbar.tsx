@@ -1,6 +1,7 @@
 import {
     GridToolbarContainer,
     ColumnsPanelTrigger,
+    // ExportTrigger,
     ToolbarButton,
 } from '@mui/x-data-grid';
 import { Box, Divider, keyframes, Tooltip } from '@mui/material';
@@ -8,13 +9,14 @@ import { ReactNode } from 'react';
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { FilterAlt, ViewColumn } from '@mui/icons-material';
+import type { GridToolbarProps } from '@mui/x-data-grid/internals';
 
-interface CustomToolbarProps {
-    isLoading: boolean;
+type CustomToolbarProps = GridToolbarProps & {
+    isLoading?: boolean;
     onRefresh?: () => void;
     onClickFilter?: () => void;
     leftContent?: ReactNode;
-}
+};
 
 export const CustomToolbar = ({ onRefresh, isLoading, onClickFilter, leftContent }: CustomToolbarProps) => {
     const spin = keyframes`
@@ -50,6 +52,16 @@ export const CustomToolbar = ({ onRefresh, isLoading, onClickFilter, leftContent
                 </ColumnsPanelTrigger>
             </Tooltip>
 
+            {/* <Tooltip title="Export PDF">
+                <ExportTrigger
+                    slotProps={{
+                        button: { variant: 'pdf' }, // exporta só PDF
+                    }}
+                >
+                    <ToolbarButton />
+                </ExportTrigger>
+            </Tooltip> */}
+
             {(onClickFilter || onRefresh) && <Divider orientation="vertical" variant="middle" flexItem sx={{ mx: 0.5 }} />}
 
             {onClickFilter && <Tooltip title="Filtro">
@@ -61,9 +73,7 @@ export const CustomToolbar = ({ onRefresh, isLoading, onClickFilter, leftContent
             {onRefresh && <Tooltip title="Recarregar">
                 <span>
                     <ToolbarButton
-                        onClick={onRefresh}
-                        disabled={isLoading}
-
+                        onClick={isLoading ? undefined : onRefresh}
                     >
                         <RefreshIcon
                             fontSize="small"

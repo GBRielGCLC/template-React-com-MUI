@@ -13,7 +13,6 @@ import { PersonOutlined, LockOutline, Visibility, VisibilityOff } from "@mui/ico
 import { Controller } from "react-hook-form";
 import { useLogin } from "./useLogin";
 import { ToggleThemeButton } from "../../Components/ToggleThemeButton";
-import { BarraColorida } from "../../Components/BarraColorida";
 
 export const Login = () => {
     const {
@@ -134,10 +133,6 @@ export const Login = () => {
                         </Button>
                     </Box>
                 </CardContent>
-
-                <Box mt={2} />
-
-                <BarraColorida />
             </Card>
         </Box>
     );

@@ -43,6 +43,8 @@ import {
     Visibility,
     VisibilityOff,
     CloudUpload,
+    Dialpad,
+    Numbers,
 } from '@mui/icons-material';
 import { useConfirm } from '../../Contexts/ConfirmDialogContext';
 import { toastManager } from '../../Services/ToastUtils';
@@ -53,6 +55,9 @@ import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { ActionButtons } from '../../Components/PersonalizedDataGrid/ActionButtons';
 import { FileUpload } from '../../Components/FileUpload';
 import { MoneyTextField } from '../../Components/MoneyTextField';
+import { PhoneTextField } from '../../Components/PhoneTextField';
+import { CpfCnpjTextField } from '../../Components/CpfCnpjTextField';
+import NumberSpinner from '../../Components/NumberSpinner';
 import { useExemplo } from './useExemplo';
 
 const columns: GridColDef[] = withDefaultColumns([
@@ -117,6 +122,10 @@ export const Exemplo = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [loadingFile, setLoadingFile] = useState(false);
+    const [telefone, setTelefone] = useState<string | null>(null);
+    const [documento, setDocumento] = useState<string | null>(null);
+    const [cpf, setCpf] = useState<string | null>(null);
+    const [quantidade, setQuantidade] = useState<number | null>(10);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pb: 3 }}>
@@ -655,6 +664,97 @@ export const Exemplo = () => {
                                     >
                                         Simular Upload
                                     </Button>
+                                </Stack>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader
+                                title="Campos com Máscara"
+                                subheader="PhoneTextField, CpfCnpjTextField (react-imask)"
+                                avatar={<Dialpad color="primary" />}
+                            />
+                            <CardContent>
+                                <Grid container spacing={2}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <PhoneTextField
+                                            label="Telefone"
+                                            fullWidth
+                                            value={telefone}
+                                            onChange={setTelefone}
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <CpfCnpjTextField
+                                            label="CPF/CNPJ"
+                                            fullWidth
+                                            value={documento}
+                                            onChange={setDocumento}
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <CpfCnpjTextField
+                                            label="CPF (tipo fixo)"
+                                            tipo="cpf"
+                                            fullWidth
+                                            value={cpf}
+                                            onChange={setCpf}
+                                            helperText="Com tipo='cpf' a máscara trava no formato de CPF"
+                                        />
+                                    </Grid>
+                                </Grid>
+                                <Stack direction="row" spacing={1} sx={{ mt: 2 }} flexWrap="wrap" useFlexGap>
+                                    <Chip
+                                        label={`Telefone: ${telefone || '—'}`}
+                                        color="primary"
+                                        variant="outlined"
+                                        size="small"
+                                    />
+                                    <Chip
+                                        label={`Documento: ${documento || '—'}`}
+                                        color="primary"
+                                        variant="outlined"
+                                        size="small"
+                                    />
+                                </Stack>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader
+                                title="Número com Spinner"
+                                subheader="NumberSpinner (Base UI + MUI)"
+                                avatar={<Numbers color="primary" />}
+                            />
+                            <CardContent>
+                                <Grid container spacing={2}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <NumberSpinner
+                                            label="Quantidade"
+                                            fullWidth
+                                            value={quantidade}
+                                            onValueChange={setQuantidade}
+                                            min={0}
+                                            max={100}
+                                            step={1}
+                                        />
+                                    </Grid>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <NumberSpinner
+                                            label="Desabilitado"
+                                            fullWidth
+                                            value={5}
+                                            disabled
+                                        />
+                                    </Grid>
+                                </Grid>
+                                <Stack direction="row" spacing={1} sx={{ mt: 2 }} flexWrap="wrap" useFlexGap>
+                                    <Chip
+                                        label={`Valor atual: ${quantidade ?? '—'}`}
+                                        color="primary"
+                                        variant="outlined"
+                                        size="small"
+                                    />
                                 </Stack>
                             </CardContent>
                         </Card>

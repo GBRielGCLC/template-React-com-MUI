@@ -126,9 +126,8 @@ const parseNumberText = (raw: string, options: MaskOptions): ParsedInput => {
         if (!hasDecimal) hasDecimal = true;
     }
 
-    // A leitura é sempre "os últimos dígitos são a fração": completa a parte fracionária
-    // com zeros até as casas decimais ("1234" = 1234,00 e "12,5" = 12,50)
-    if (decimals > 0 && frac.length < decimals) frac += "0".repeat(decimals - frac.length);
+    // Sem separador decimal, o texto colado vale como número por inteiro ("1234" = 1234,00)
+    if (!hasDecimal && decimals > 0) frac = "0".repeat(decimals);
 
     return { digits: int.replace(/^0+(?=\d)/, "") + frac, negative };
 };
