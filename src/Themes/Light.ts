@@ -1,24 +1,25 @@
 import { createTheme } from '@mui/material';
 import { getBaseTheme } from './Base';
-import { blue, cyan, grey } from '@mui/material/colors';
+import { grey } from '@mui/material/colors';
+import { brand, brandGradient } from './Brand';
 
 export const LightTheme = createTheme(getBaseTheme('light'), {
     palette: {
         primary: {
-            main: "#083c94",
-            dark: blue[600],
-            light: blue[400],
+            main: brand.violet.main,
+            dark: brand.violet.dark,
+            light: brand.violet.light,
             contrastText: '#ffffff',
         },
         secondary: {
-            main: cyan[700],
-            dark: cyan[800],
-            light: cyan[600],
+            main: brand.teal.main,
+            dark: brand.teal.dark,
+            light: brand.teal.light,
             contrastText: '#ffffff',
         },
         background: {
-            paper: '#f9f9f9',
-            default: grey[200],
+            paper: '#ffffff',
+            default: '#f4f4f9',
         },
         text: {
             secondary: grey[700],
@@ -34,7 +35,7 @@ export const LightTheme = createTheme(getBaseTheme('light'), {
                     borderRadius: 8,
                 },
                 columnHeader: {
-                    background: '#0D47A1',
+                    background: brandGradient,
                     color: '#ffffff',
                     fontWeight: 'bold',
                 },
@@ -43,10 +44,10 @@ export const LightTheme = createTheme(getBaseTheme('light'), {
                         backgroundColor: '#ffffff',
                     },
                     '&:nth-of-type(even)': {
-                        backgroundColor: '#f5f5f5',
+                        backgroundColor: '#f5f5f9',
                     },
                     '&:hover': {
-                        backgroundColor: '#eaeaea',
+                        backgroundColor: '#eeeeF5',
                     },
                 },
             },

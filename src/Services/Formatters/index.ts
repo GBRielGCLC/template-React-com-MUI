@@ -31,3 +31,15 @@ export const formatarDataTela = (date?: string | null): string => {
 
     return data.format('DD/MM/YYYY')
 }
+
+export const formatarDataHoraTela = (date?: string | null): string => {
+    if (!date) return "-";
+
+    let data = dayjs(date);
+
+    if (!data.isValid()) {
+        return "-"
+    }
+
+    return data.format('DD/MM/YYYY HH:mm')
+}

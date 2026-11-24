@@ -1,5 +1,5 @@
 import { ThemeOptions } from '@mui/material';
-import { blue } from '@mui/material/colors';
+import { brand } from './Brand';
 
 export const getBaseTheme = (mode: 'light' | 'dark'): ThemeOptions => ({
     palette: {
@@ -32,7 +32,7 @@ export const getBaseTheme = (mode: 'light' | 'dark'): ThemeOptions => ({
         MuiCircularProgress: {
             styleOverrides: {
                 root: {
-                    color: blue[600],
+                    color: mode === 'light' ? brand.violet.main : brand.violet.light,
                 },
             },
         },

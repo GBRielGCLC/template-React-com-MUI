@@ -38,6 +38,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
+  "//proxy": "Só engaja se REACT_APP_API_URL for relativo (ex.: /api/v1) — ver .env.example. Caminho direto (localhost:5000) ignora isto.",
+  "proxy": "http://localhost:5000",
   "eslintConfig": {
     "extends": [
       "react-app",

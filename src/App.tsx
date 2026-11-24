@@ -7,19 +7,61 @@ import { ptBR } from "@mui/x-date-pickers/locales";
 import { AuthProvider, useAuth } from './Contexts/AuthContext';
 import { Login } from './Pages/Login';
 import { AppRoutes } from './Routes';
-import { BrowserRouter } from 'react-router-dom';
-import { GenericLayout } from './Components/GenericLayout';
-import { ArrayTelasModulos } from './Pages/Home/ArrayTelas';
+import { BrowserRouter, useLocation } from 'react-router-dom';
+import { GenericLayout, MenuItem } from './Components/GenericLayout';
+import { Event as EventIcon, AdminPanelSettings } from '@mui/icons-material';
+
+const baseMenuItems: MenuItem[] = [
+  {
+    titulo: 'Eventos',
+    icone: <EventIcon />,
+    path: '/events',
+  },
+];
+
+/** Rotas que funcionam sem login e sem o shell (sidebar/appbar). */
+const isStandalonePath = (pathname: string) =>
+  pathname === '/join' || pathname === '/invite' || pathname.startsWith('/public/');
 
 const AppContent = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isParticipant, participantEventId, user } = useAuth();
+  const location = useLocation();
 
-  if (!isAuthenticated) {
+  // Link público do evento, entrada do participante e aceite de convite:
+  // sem login e sem layout.
+  if (isStandalonePath(location.pathname)) {
+    return <AppRoutes />;
+  }
+
+  if (!isAuthenticated && !isParticipant) {
     return <Login />;
   }
 
+  // Participante (sem usuário logado) não lista eventos — menu é só o dele.
+  const menuItems: MenuItem[] = isAuthenticated
+    ? [
+        ...baseMenuItems,
+        // Só quem tem `platform_admin` vê a administração da plataforma.
+        ...(user?.isPlatformAdmin
+          ? [
+              {
+                titulo: 'Administração',
+                icone: <AdminPanelSettings />,
+                path: '/admin',
+              },
+            ]
+          : []),
+      ]
+    : [
+        {
+          titulo: 'Meu evento',
+          icone: <EventIcon />,
+          path: participantEventId ? `/events/${participantEventId}` : '/events',
+        },
+      ];
+
   return (
-    <GenericLayout menuItems={ArrayTelasModulos()} appName="Template Base">
+    <GenericLayout menuItems={menuItems} appName="Quitta">
       <AppRoutes />
     </GenericLayout>
   );

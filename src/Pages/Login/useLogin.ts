@@ -5,17 +5,18 @@ import { useState } from "react";
 import { yup } from "../../Services";
 
 interface ILoginForm {
-    name: string;
+    email: string;
     password: string;
 }
 
 const loginSchema = yup.object({
-  name: yup
-    .string()
-    .required('Informe o usuário'),
-  password: yup
-    .string()
-    .required('Informe a senha'),
+    email: yup
+        .string()
+        .required('Informe o e-mail')
+        .email('Informe um e-mail válido'),
+    password: yup
+        .string()
+        .required('Informe a senha'),
 });
 
 export const useLogin = () => {
@@ -30,13 +31,17 @@ export const useLogin = () => {
     } = useForm<ILoginForm>({
         resolver: yupResolver(loginSchema),
         defaultValues: {
-            name: "",
+            email: "",
             password: "",
         },
     });
 
     const onSubmit = async (data: ILoginForm) => {
-        await login(data);
+        try {
+            await login(data);
+        } catch {
+            // O AuthContext já exibe o toast com a mensagem da API.
+        }
     };
 
     return {

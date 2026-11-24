@@ -26,11 +26,11 @@ import {
     Logout,
     ExpandLess,
     ExpandMore,
-    Home as HomeIcon,
     MenuOpen,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../Contexts/AuthContext';
+import { toastManager } from '../../Services/ToastUtils';
 import { ToggleThemeButton } from '../ToggleThemeButton';
 
 export interface MenuItem {
@@ -38,8 +38,6 @@ export interface MenuItem {
     icone: React.ReactNode;
     path?: string;
     url?: string;
-    element?: React.ReactNode;
-    allowedRoles?: string[];
     desabilitado?: boolean;
     mensagemDesabilitado?: string;
     telas?: MenuItem[];
@@ -142,13 +140,24 @@ const Drawer = styled(MuiDrawer)(
 export const GenericLayout: React.FC<GenericLayoutProps> = ({
     children,
     menuItems = [],
-    appName = 'TEMPLATE BASE',
+    appName = 'QUITTA',
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { logout } = useAuth();
+    const { logout, leaveParticipant, isParticipant, isAuthenticated } = useAuth();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    // Participante que não tem conta no Quitta: "Sair" apenas sai do evento.
+    const handleLogout = () => {
+        if (isParticipant && !isAuthenticated) {
+            leaveParticipant();
+            toastManager.success('Você saiu do evento.');
+            navigate('/');
+            return;
+        }
+        logout();
+    };
 
     const [open, setOpen] = React.useState(() => {
         const savedState = localStorage.getItem('menu-drawer-open');
@@ -342,7 +351,7 @@ export const GenericLayout: React.FC<GenericLayoutProps> = ({
                         </Tooltip>
 
                         <Tooltip title="Sair">
-                            <IconButton color="error" onClick={logout} size="small">
+                            <IconButton color="error" onClick={handleLogout} size="small">
                                 <Logout />
                             </IconButton>
                         </Tooltip>
@@ -361,7 +370,7 @@ export const GenericLayout: React.FC<GenericLayoutProps> = ({
                             textTransform: 'uppercase',
                             letterSpacing: 1,
                         }}
-                        onClick={() => navigate('/home')}
+                        onClick={() => navigate('/events')}
                     >
                         {appName}
                     </Typography>
@@ -369,31 +378,6 @@ export const GenericLayout: React.FC<GenericLayoutProps> = ({
                 <Divider />
 
                 <List sx={{ px: 1, pt: 0.5 }}>
-                    <ListItem disablePadding sx={{ display: 'block', mb: 0.5 }}>
-                        <Tooltip title={!drawerOpen ? "Página Inicial" : ""} placement="right">
-                            <ListItemButton
-                                onClick={() => {
-                                    navigate('/home');
-                                    if (isMobile) setMobileOpen(false);
-                                }}
-                                selected={location.pathname === '/home'}
-                                sx={{
-                                    minHeight: 44,
-                                    justifyContent: drawerOpen ? 'initial' : 'center',
-                                    px: 2.5,
-                                    borderRadius: 2,
-                                }}
-                            >
-                                <ListItemIcon sx={{ minWidth: 0, mr: drawerOpen ? 2 : 'auto', justifyContent: 'center' }}>
-                                    <HomeIcon fontSize="small" color={location.pathname === '/home' ? "primary" : "inherit"} />
-                                </ListItemIcon>
-                                <ListItemText primary="Página Inicial" sx={{ opacity: drawerOpen ? 1 : 0 }} primaryTypographyProps={{ fontSize: '0.875rem' }} />
-                            </ListItemButton>
-                        </Tooltip>
-                    </ListItem>
-
-                    <Divider sx={{ my: 1 }} />
-
                     {menuItems.map(renderMenuItem)}
                 </List>
             </Drawer>

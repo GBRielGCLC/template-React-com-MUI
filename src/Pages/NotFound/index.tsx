@@ -32,10 +32,10 @@ export const NotFound = () => {
         variant="contained"
         size="large"
         startIcon={<Home />}
-        onClick={() => navigate('/home')}
+        onClick={() => navigate('/events')}
         sx={{ mt: 2 }}
       >
-        Voltar para o início
+        Ir para os eventos
       </Button>
     </Box>
   );

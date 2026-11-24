@@ -53,24 +53,33 @@ export const Login = () => {
                             mb: 3
                         }}
                     >
-                        <Typography variant="h4" fontWeight="bold" color="primary">
-                            TEMPLATE BASE
+                        <Box
+                            component="img"
+                            src="/logo.png"
+                            alt="Quitta"
+                            sx={{ height: 72, mb: 1 }}
+                        />
+                        <Typography variant="h5" fontWeight="bold" color="primary">
+                            Quitta
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Divida, registre e acerte as contas
                         </Typography>
                     </Box>
 
                     <Box component="form" onSubmit={handleSubmit(onSubmit)}>
                         <Controller
-                            name="name"
+                            name="email"
                             control={control}
-                            rules={{ required: "Informe o nome de usuário" }}
                             render={({ field }) => (
                                 <TextField
                                     {...field}
-                                    label="Nome de usuário"
+                                    label="E-mail"
+                                    type="email"
                                     fullWidth
                                     margin="normal"
-                                    error={!!errors.name}
-                                    helperText={errors.name?.message}
+                                    error={!!errors.email}
+                                    helperText={errors.email?.message}
                                     disabled={isLoading}
 
                                     slotProps={{
@@ -89,7 +98,6 @@ export const Login = () => {
                         <Controller
                             name="password"
                             control={control}
-                            rules={{ required: "Informe a senha" }}
                             render={({ field }) => (
                                 <TextField
                                     {...field}
